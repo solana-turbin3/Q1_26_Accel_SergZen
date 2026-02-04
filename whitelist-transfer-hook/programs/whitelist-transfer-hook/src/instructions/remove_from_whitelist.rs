@@ -1,0 +1,33 @@
+use anchor_lang::prelude::*;
+
+use crate::{errors::WhitelistTransferHookError, state::{Config, whitelist::Whitelist}};
+
+#[derive(Accounts)]
+#[instruction(user: Pubkey)]
+pub struct RemoveFromWhitelist<'info> {
+    #[account(
+        mut,
+        address = config.admin @ WhitelistTransferHookError::Unauthorized,
+    )]
+    pub admin: Signer<'info>,
+    #[account(
+        seeds = [b"config"],
+        bump = config.bump,
+    )]
+    pub config: Account<'info, Config>,
+    #[account(
+        mut,
+        seeds = [b"whitelist", user.as_ref()],
+        close = admin,
+        bump = whitelist.bump,
+    )]
+    pub whitelist: Account<'info, Whitelist>,
+}
+
+impl<'info> RemoveFromWhitelist<'info> {
+    pub fn remove_from_whitelist(&mut self, user: Pubkey) -> Result<()> {
+        msg!("Removing user from whitelist: {}", user);
+
+        Ok(())
+    }
+}
