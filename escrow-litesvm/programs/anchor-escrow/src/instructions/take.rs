@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::{associated_token::AssociatedToken, token_interface::{Mint, TokenAccount, TokenInterface, TransferChecked, transfer_checked, CloseAccount, close_account}};
 
-use crate::state::Escrow;
+use crate::{constants::FIVE_DAYS, errors::EscrowError, state::Escrow};
 
 //Create context
 #[derive(Accounts)]
@@ -18,20 +18,20 @@ pub struct Take<'info> {
         associated_token::mint = mint_a,
         associated_token::authority = taker,
     )]
-    pub taker_ata_a: InterfaceAccount<'info, TokenAccount>,
+    pub taker_ata_a: Box<InterfaceAccount<'info, TokenAccount>>,
     #[account(
         mut,
         associated_token::mint = mint_b,
         associated_token::authority = taker,
     )]
-    pub taker_ata_b: InterfaceAccount<'info, TokenAccount>,
+    pub taker_ata_b: Box<InterfaceAccount<'info, TokenAccount>>,
     #[account(
         init_if_needed,
         payer = taker,
         associated_token::mint = mint_b,
         associated_token::authority = maker,
     )]
-    pub maker_ata_b: InterfaceAccount<'info, TokenAccount>,
+    pub maker_ata_b: Box<InterfaceAccount<'info, TokenAccount>>,
     #[account(
         mut,
         close = maker,
@@ -58,6 +58,11 @@ pub struct Take<'info> {
 //Close vault account
 impl<'info> Take<'info> {
     pub fn deposit(&mut self) -> Result<()> {
+        require!(
+            Clock::get()?.unix_timestamp >= self.escrow.created_at + FIVE_DAYS,
+            EscrowError::TakeBeforeUnlock
+        );
+
         let cpi_program = self.token_program.to_account_info();
 
         let cpi_accounts = TransferChecked {

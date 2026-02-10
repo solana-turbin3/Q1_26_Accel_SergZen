@@ -45,6 +45,7 @@ impl<'info> Make<'info> {
             mint_b: self.mint_b.key(),
             receive,
             bump: bumps.escrow,
+            created_at: Clock::get()?.unix_timestamp,
         });
 
         Ok(())
