@@ -9,7 +9,7 @@ pub struct InitUser<'info> {
     #[account(
         init,
         payer = user,
-        space = UserAccount::INIT_SPACE,
+        space = UserAccount::DISCRIMINATOR.len() + UserAccount::INIT_SPACE,
         seeds = [b"user", user.key().as_ref()],
         bump
     )]
@@ -21,7 +21,8 @@ impl<'info> InitUser<'info> {
     pub fn initialize(&mut self, bumps: &InitUserBumps) -> Result<()> {
         self.user_account.set_inner(UserAccount { 
             user: *self.user.key, 
-            data: 0, 
+            data: 0,
+            random: 0, 
             bump: bumps.user_account 
         });
         

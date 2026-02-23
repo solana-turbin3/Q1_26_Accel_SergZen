@@ -2,9 +2,12 @@ import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { GetCommitmentSignature } from "@magicblock-labs/ephemeral-rollups-sdk";
-import { ErStateAccount } from "../target/types/er_state_account";
+import { MagicblockVrf } from "../target/types/magicblock_vrf";
 
-describe("er-state-account", () => {
+const ORACLE_QUEUE = new PublicKey("Cuj97ggrhhidhbu39TijNVqE74xvKJ69gDervRUXAxGh");
+const ORACLE_EPHEMERAL_QUEUE = new PublicKey("5hBR571xnXppuCPveTrctfTU7tJLSN94nq7kv7FRK5Tc");
+
+describe("magicblock-vrf", () => {
   // Configure the client to use the local cluster.
   const provider = anchor.AnchorProvider.env();
   anchor.setProvider(provider);
@@ -34,7 +37,7 @@ describe("er-state-account", () => {
     console.log("Current balance is", balance / LAMPORTS_PER_SOL, " SOL", "\n");
   });
 
-  const program = anchor.workspace.erStateAccount as Program<ErStateAccount>;
+  const program = anchor.workspace.magicblockVrf as Program<MagicblockVrf>;
 
   const userAccount = anchor.web3.PublicKey.findProgramAddressSync(
     [Buffer.from("user"), anchor.Wallet.local().publicKey.toBuffer()],
@@ -52,6 +55,19 @@ describe("er-state-account", () => {
       })
       .rpc();
     console.log("User Account initialized: ", tx);
+  });
+
+  it("Request randomness on base layer", async () => {
+    const tx = await program.methods
+      .requestRandomness(1)
+      .accountsPartial({ oracleQueue: ORACLE_QUEUE })
+      .rpc();
+
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+
+    const account = await program.account.userAccount.fetch(userAccount);
+    const random = account.random;
+    console.log("Random :", account.random.toString());
   });
 
   it("Update State!", async () => {
@@ -77,6 +93,32 @@ describe("er-state-account", () => {
       .rpc({ skipPreflight: true });
 
     console.log("\nUser Account Delegated to Ephemeral Rollup: ", tx);
+  });
+
+  it("Request randomness inside ephemeral rollup", async () => {
+    let tx = await program.methods
+      .requestRandomness(2)
+      .accountsPartial({ 
+        oracleQueue: ORACLE_EPHEMERAL_QUEUE
+      })
+      .transaction();
+
+    tx.feePayer = providerEphemeralRollup.wallet.publicKey;
+    tx.recentBlockhash = (
+      await providerEphemeralRollup.connection.getLatestBlockhash()
+    ).blockhash;
+    tx = await providerEphemeralRollup.wallet.signTransaction(tx);
+    const txHash = await providerEphemeralRollup.sendAndConfirm(tx, [], {
+      skipPreflight: false,
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+
+    const account = await providerEphemeralRollup.connection.getAccountInfo(userAccount);
+    if (account) {
+      const random = new anchor.BN(account.data.slice(40, 48), "le");
+      console.log("Random :", random.toString());
+    }
   });
 
   it("Update State and Commit to Base Layer!", async () => {

@@ -9,11 +9,11 @@ mod instructions;
 
 use instructions::*;
 
-declare_id!("9hG187VazKdEZcYbsEcoPuPEWwkfF9HccUDTAJzuEcg3");
+declare_id!("9rLmyEBSfFgAKfSQdgkbsXmh34cVwdirVTbRDME31z6Z");
 
 #[ephemeral]
 #[program]
-pub mod er_state_account {
+pub mod magicblock_vrf {
 
     use super::*;
 
@@ -50,6 +50,21 @@ pub mod er_state_account {
     pub fn close(ctx: Context<CloseUser>) -> Result<()> {
         ctx.accounts.close()?;
         
+        Ok(())
+    }
+
+    pub fn request_randomness(ctx: Context<RequestRandomness>, client_seed: u8) -> Result<()> {
+        ctx.accounts.request_randomness(client_seed)?;
+
+        Ok(())
+    }
+
+    pub fn callback_randomness(
+        ctx: Context<CallbackRandomness>,
+        randomness: [u8; 32],
+    ) -> Result<()> {
+        ctx.accounts.callback_randomness(randomness)?;
+
         Ok(())
     }
 }
