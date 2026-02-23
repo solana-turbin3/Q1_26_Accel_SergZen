@@ -1,5 +1,5 @@
 pub mod vault;
-pub mod whitelist;
+pub mod user_deposit;
 
 pub use vault::*;
-pub use whitelist::*;
+pub use user_deposit::*;

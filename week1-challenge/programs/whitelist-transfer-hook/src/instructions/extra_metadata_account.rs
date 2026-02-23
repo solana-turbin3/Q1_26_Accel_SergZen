@@ -1,10 +1,11 @@
 use anchor_lang::prelude::*;
+
 use anchor_spl::token_interface::Mint;
 use spl_tlv_account_resolution::{
-    account::ExtraAccountMeta,
-    seeds::Seed,
-    state::ExtraAccountMetaList,
+    account::ExtraAccountMeta, seeds::Seed, state::ExtraAccountMetaList,
 };
+
+use crate::errors::WhitelistTransferHookError;
 
 #[derive(Accounts)]
 pub struct InitializeExtraAccountMetaList<'info> {
@@ -21,25 +22,44 @@ pub struct InitializeExtraAccountMetaList<'info> {
         ).unwrap(),
         payer = payer
     )]
-    pub extra_account_meta_list: AccountInfo<'info>,
+    pub extra_account_meta_list: UncheckedAccount<'info>,
     pub mint: InterfaceAccount<'info, Mint>,
     pub system_program: Program<'info, System>,
 }
 
 impl<'info> InitializeExtraAccountMetaList<'info> {
     pub fn extra_account_metas() -> Result<Vec<ExtraAccountMeta>> {
-        // The whitelist PDA is a global account (no per-owner seed).
         Ok(vec![
             ExtraAccountMeta::new_with_seeds(
                 &[
                     Seed::Literal {
                         bytes: b"whitelist".to_vec(),
                     },
+                    Seed::AccountData {
+                        account_index: 0,
+                        data_index: 32,
+                        length: 32,
+                    },
                 ],
                 false,
                 false,
             )
-            .unwrap(),
+            .map_err(|_| error!(WhitelistTransferHookError::ExtraAccountMetaError))?,
+            ExtraAccountMeta::new_with_seeds(
+                &[
+                    Seed::Literal {
+                        bytes: b"whitelist".to_vec(),
+                    },
+                    Seed::AccountData {
+                        account_index: 2,
+                        data_index: 32,
+                        length: 32,
+                    },
+                ],
+                false,
+                false,
+            )
+            .map_err(|_| error!(WhitelistTransferHookError::ExtraAccountMetaError))?,
         ])
     }
 }

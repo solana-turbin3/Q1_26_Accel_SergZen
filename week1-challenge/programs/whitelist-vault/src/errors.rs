@@ -20,4 +20,6 @@ pub enum VaultError {
     UnderflowError,
     #[msg("Address is not whitelisted")]
     NotWhitelisted,
+    #[msg("Extra Account Meta Error")]
+    ExtraAccountMetaError,
 }

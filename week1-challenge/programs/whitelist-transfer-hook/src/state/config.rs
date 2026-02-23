@@ -2,12 +2,7 @@ use anchor_lang::prelude::*;
 
 #[account]
 #[derive(InitSpace)]
-pub struct Vault {
+pub struct Config {
     pub admin: Pubkey,
-    pub mint: Pubkey,
-    pub bump_mint: u8,
-    pub balance: u64,
     pub bump: u8,
 }
-
-

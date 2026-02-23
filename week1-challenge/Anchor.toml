@@ -5,7 +5,8 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-whitelist_vault = "2Ze9h7UzmTccSf5F6oYYrxxM6biDMDPUWh2B1iKwubEg"
+whitelist_transfer_hook = "CHVVjSRy3TBZErMPk2hpwbyMxNJivHoFpLsHCvAHVtgg"
+whitelist_vault = "rHaSpnyBRKdMLCN8YFjn7xeYPzr6EweeJ3BcBBsozsh"
 
 [registry]
 url = "https://api.apr.dev"
@@ -13,3 +14,6 @@ url = "https://api.apr.dev"
 [provider]
 cluster = "localnet"
 wallet = "~/.config/solana/id.json"
+
+[scripts]
+test = "cargo test -- --nocapture"
