@@ -3,4 +3,20 @@ name = "rust-generic-storage"
 version = "0.1.0"
 edition = "2024"
 
+[lib]
+name = "rust_generic_storage"
+path = "src/lib.rs"
+
 [dependencies]
+serde_json = "1.0.149"
+serde = { version = "1.0.228", features = ["derive"] }
+borsh = { version = "1.6.0", features = ["derive"] }
+wincode = { version = "0.4.4", features = ["derive"] }
+
+[dev-dependencies]
+criterion = { version = "0.8", features = ["html_reports"] }
+
+[[bench]]
+name = "serializer_bench"
+path = "benches/serializer_bench.rs"
+harness = false
