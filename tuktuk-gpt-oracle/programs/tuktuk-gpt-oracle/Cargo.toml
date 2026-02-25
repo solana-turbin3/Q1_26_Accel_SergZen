@@ -1,12 +1,12 @@
 [package]
-name = "tuktuk-counter"
+name = "tuktuk-gpt-oracle"
 version = "0.1.0"
 description = "Created with Anchor"
 edition = "2021"
 
 [lib]
 crate-type = ["cdylib", "lib"]
-name = "tuktuk_counter"
+name = "tuktuk_gpt_oracle"
 
 [features]
 default = []
@@ -23,7 +23,7 @@ custom-panic = []
 [dependencies]
 anchor-lang = { version = "0.31.1", features = ["init-if-needed"] }
 solana-gpt-oracle = { git = "https://github.com/magicblock-labs/super-smart-contracts", features = ["cpi"] }
-tuktuk-program = { git = "https://github.com/AvhiMaz/tuktuk", branch = "chore/bump-versions", package = "tuktuk-program" }
+tuktuk-program = { git = "https://github.com/helium/tuktuk.git", rev = "112afe5e80aff8199c3b779203b76b35d97c42d1" }
 
 
 [lints.rust]
