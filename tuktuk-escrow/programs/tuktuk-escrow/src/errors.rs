@@ -4,4 +4,6 @@ use anchor_lang::prelude::*;
 pub enum EscrowError {
     #[msg("Take is not allowed before the unlock time")]
     TakeBeforeUnlock,
+    #[msg("Escrow has not expired; auto refund is not allowed")]
+    EscrowNotExpired,
 }

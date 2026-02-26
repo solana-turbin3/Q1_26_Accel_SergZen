@@ -6,14 +6,14 @@ use crate::state::Escrow;
 #[derive(Accounts)]
 pub struct Refund<'info> {
     #[account(mut)]
-    maker: Signer<'info>,
-    mint_a: InterfaceAccount<'info, Mint>,
+    pub maker: Signer<'info>,
+    pub mint_a: InterfaceAccount<'info, Mint>,
     #[account(
         mut,
         associated_token::mint = mint_a,
         associated_token::authority = maker,
     )]
-    maker_ata_a: InterfaceAccount<'info, TokenAccount>,
+    pub maker_ata_a: InterfaceAccount<'info, TokenAccount>,
     #[account(
         mut,
         close = maker,
@@ -28,10 +28,10 @@ pub struct Refund<'info> {
         associated_token::mint = mint_a,
         associated_token::authority = escrow,
     )]
-    vault: InterfaceAccount<'info, TokenAccount>,
+    pub vault: InterfaceAccount<'info, TokenAccount>,
     pub associated_token_program: Program<'info, AssociatedToken>,
-    token_program: Interface<'info, TokenInterface>,
-    system_program: Program<'info, System>,
+    pub token_program: Interface<'info, TokenInterface>,
+    pub system_program: Program<'info, System>,
 }
 
 impl<'info> Refund<'info> {
