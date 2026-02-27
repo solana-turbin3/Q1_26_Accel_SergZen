@@ -1,0 +1,20 @@
+cargo-features = ["edition2024"]
+
+[package]
+name = "pinocchio_fundraiser"
+version = "0.1.0"
+edition = "2024"
+
+
+[lib]
+crate-type = ["cdylib", "lib"]
+
+[dependencies]
+pinocchio = "0.10.2"
+pinocchio-system = "0.5.0"
+pinocchio-token = "0.5.0"
+# pinocchio-pubkey = { git = "https://github.com/anza-xyz/pinocchio.git" }
+pinocchio-log = "0.5.1"
+pinocchio-associated-token-account = "0.3.0"
+wincode = { version = "0.4.5", features = ["derive"] }
+pinocchio-pubkey = "0.3.0"
