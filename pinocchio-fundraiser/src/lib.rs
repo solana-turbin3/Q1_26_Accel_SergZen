@@ -5,11 +5,11 @@ use pinocchio::{
 
 use crate::instructions::FundraiserInstructions;
 
-// use crate::instructions::EscrowInstrctions;
-
 mod constants;
 mod instructions;
 mod state;
+mod tests;
+mod error;
 
 entrypoint!(process_instruction);
 
@@ -27,9 +27,10 @@ pub fn process_instruction(
         .ok_or(ProgramError::InvalidInstructionData)?;
 
     match FundraiserInstructions::try_from(discriminator)? {
-        FundraiserInstructions::Initialize => {
-            instructions::process_initialize_instruction(accounts, data)?
-        } // _ => return Err(ProgramError::InvalidInstructionData),
+        FundraiserInstructions::Initialize => instructions::process_initialize_instruction(accounts, data),
+        FundraiserInstructions::Contribute => instructions::process_contribute_instruction(accounts, data),
+        FundraiserInstructions::Checker => instructions::process_checker_instruction(accounts, data),
+        FundraiserInstructions::Refund => instructions::process_refund_instruction(accounts, data),
+//      _ => return Err(ProgramError::InvalidInstructionData),
     }
-    Ok(())
 }
