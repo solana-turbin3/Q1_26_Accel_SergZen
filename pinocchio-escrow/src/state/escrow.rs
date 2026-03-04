@@ -1,18 +1,26 @@
-use pinocchio::{AccountView, error::ProgramError};
+use pinocchio::{error::ProgramError, AccountView};
+
+use wincode::{SchemaRead, SchemaWrite};
 
 #[repr(C)]
-#[derive(Clone, Copy, Debug, Default, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, SchemaWrite, SchemaRead)]
 pub struct Escrow {
     maker: [u8; 32],
     mint_a: [u8; 32],
     mint_b: [u8; 32],
     amount_to_receive: [u8; 8],
     amount_to_give: [u8; 8],
+    seed: [u8; 8],
     pub bump: u8,
 }
 
 impl Escrow {
-    pub const LEN: usize = 32 + 32 + 32 + 8 + 8;
+    pub const LEN: usize = 32 + 32 + 32 + 8 + 8 + 8 + 1;
+
+    pub fn from_account_info_wincode(account_info: &AccountView) -> Result<Self, ProgramError> {
+        let data = account_info.try_borrow()?;
+        wincode::deserialize(&data).map_err(|_| ProgramError::InvalidAccountData)
+    }
 
     pub fn from_account_info(account_info: &AccountView) -> Result<&mut Self, ProgramError> {
         let mut data = account_info.try_borrow_mut()?;
@@ -65,5 +73,13 @@ impl Escrow {
 
     pub fn set_amount_to_give(&mut self, amount: u64) {
         self.amount_to_give = amount.to_le_bytes();
+    }
+
+    pub fn seed(&self) -> u64 {
+        u64::from_le_bytes(self.seed)
+    }
+
+    pub fn set_seed(&mut self, seed: u64) {
+        self.seed = seed.to_le_bytes();
     }
 }

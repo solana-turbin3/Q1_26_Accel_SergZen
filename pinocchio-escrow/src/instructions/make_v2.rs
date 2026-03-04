@@ -10,7 +10,17 @@ use pinocchio_token::state::Mint;
 
 use crate::state::Escrow;
 
-pub fn process_make_instruction(accounts: &[AccountView], data: &[u8]) -> ProgramResult {
+use wincode::SchemaRead;
+
+#[derive(SchemaRead)]
+pub struct MakeInstructionData {
+    pub bump: u8,
+    pub amount_to_receive: u64,
+    pub amount_to_give: u64,
+    pub seed: u64,
+}
+
+pub fn process_make_instruction_v2(accounts: &[AccountView], data: &[u8]) -> ProgramResult {
     let [
         maker, 
         mint_a, 
@@ -28,7 +38,7 @@ pub fn process_make_instruction(accounts: &[AccountView], data: &[u8]) -> Progra
     if !maker.is_signer() {
         return Err(ProgramError::MissingRequiredSignature);
     }
-
+    
     if system_program.address() != &pinocchio_system::ID {
         return Err(ProgramError::IncorrectProgramId);
     }
@@ -54,25 +64,28 @@ pub fn process_make_instruction(accounts: &[AccountView], data: &[u8]) -> Progra
         }
     }
 
-    let escrow_bump = [data[0]];
-    let escrow_seed = unsafe { *(data.as_ptr().add(17) as *const u64) };
+    let ix_data: MakeInstructionData =
+        wincode::deserialize(data).map_err(|_| ProgramError::InvalidInstructionData)?;
+
+    let escrow_bump = [ix_data.bump];
+    let amount_to_receive = ix_data.amount_to_receive;
+    let amount_to_give = ix_data.amount_to_give;
+
+    let escrow_seed = ix_data.seed;
+    let escrow_seed_bytes = escrow_seed.to_le_bytes();
+
     let seed = [
         b"escrow",
         maker.address().as_ref(),
-        &escrow_seed.to_le_bytes(),
+        &escrow_seed_bytes,
         &escrow_bump,
     ];
-
     let escrow_account_pda = derive_address(&seed, None, &crate::ID.to_bytes());
 
     if escrow_account_pda != *escrow_account.address().as_array() {
         return Err(ProgramError::InvalidAccountData);
     }
 
-    let amount_to_receive = unsafe { *(data.as_ptr().add(1) as *const u64) };
-    let amount_to_give = unsafe { *(data.as_ptr().add(9) as *const u64) };
-
-    let escrow_seed_bytes = escrow_seed.to_le_bytes();
     let seed = [
         Seed::from(b"escrow"),
         Seed::from(maker.address().as_array()),
@@ -101,7 +114,7 @@ pub fn process_make_instruction(accounts: &[AccountView], data: &[u8]) -> Progra
                 escrow_state.set_amount_to_receive(amount_to_receive);
                 escrow_state.set_amount_to_give(amount_to_give);
                 escrow_state.set_seed(escrow_seed);
-                escrow_state.bump = data[0];
+                escrow_state.bump = ix_data.bump;
             }
         } else {
             return Err(ProgramError::IllegalOwner);
