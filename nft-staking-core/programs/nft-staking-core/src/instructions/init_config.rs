@@ -47,6 +47,7 @@ impl InitConfig<'_> {
             freeze_period, 
             rewards_bump: bumps.rewards_mint, 
             config_bump: bumps.config });
+
         Ok(())
     }
 }
