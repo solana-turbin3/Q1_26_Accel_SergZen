@@ -1,3 +1,6 @@
 [submodule "week3-group-challenge"]
 	path = week3-group-challenge
 	url = https://github.com/Bijoy99roy/scheduler
+[submodule "final-project"]
+	path = final-project
+	url = https://github.com/Turbin3/accel-Enclave
